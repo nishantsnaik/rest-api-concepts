@@ -2,6 +2,7 @@ package com.nishant.rest.webservices.restfulwebservices.user;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -21,42 +22,38 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 public class UserJPAResource {
-	
+
 	@Autowired
-	private UserDaoService service;
+	private UserRepository userRepository;
 	
-	@GetMapping("users")
+	@GetMapping("jpa/users")
 	public List<User> retreiveAllUsers(){
-		return service.findAll();
+		return userRepository.findAll();
 	}
 	
-	@GetMapping("users/{id}")
+	@GetMapping("jpa/users/{id}")
 	public Resource<User> retreiveUser(@PathVariable int id){
-		User user = service.findOne(id);;
-		if(user == null) {
+		Optional<User> user = userRepository.findById(id);;
+		if(!user.isPresent()) {
 			throw new UserNotFoundException("User not found with id-" +id);
 		}
 		
-		Resource<User> resource = new Resource<User>(user);
+		Resource<User> resource = new Resource<User>(user.get());
 		ControllerLinkBuilder linkTo =  linkTo(methodOn(this.getClass()).retreiveAllUsers());
 		resource.add(linkTo.withRel("all-users"));
 		return resource;
 	}
 	
-	@PostMapping("users")
+	@PostMapping("jpa/users")
 	public ResponseEntity<Object> createUser(@Valid @RequestBody User user){
-		User savedUser = service.save(user);
+		User savedUser = userRepository.save(user);
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedUser.getId()).toUri();
 		return ResponseEntity.created(location).build();
 	}
 	
-	@DeleteMapping("users/{id}")
-	public ResponseEntity<Object> deleteUser(@PathVariable int id){
-		User user = service.deleteById(id);
-		if(user == null) {
-			throw new UserNotFoundException("User not found with id-" +id);
-		}
-		return ResponseEntity.noContent().build();
+	@DeleteMapping("jpa/users/{id}")
+	public void deleteUser(@PathVariable int id){
+		userRepository.deleteById(id);
 
 	}
 
