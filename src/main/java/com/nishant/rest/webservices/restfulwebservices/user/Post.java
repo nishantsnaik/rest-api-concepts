@@ -5,6 +5,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Post {
 	
@@ -14,6 +16,7 @@ public class Post {
 	 private String description;
 	 
 	 @ManyToOne(fetch=FetchType.LAZY)
+	 @JsonIgnore
 	 private User user;
 
 	public Integer getId() {
